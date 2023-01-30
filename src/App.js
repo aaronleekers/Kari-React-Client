@@ -7,12 +7,11 @@ import { inject } from '@vercel/analytics';
 inject();
 
 const orgId = process.env.ORG_ID;
-const apiKey = process.env.API_KEY;
+const apiKey = "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";
 
 function App() {
 
   const configuration = new Configuration({
-    orgId: orgId,
     apiKey: apiKey,
   });
   const openai = new OpenAIApi(configuration);
