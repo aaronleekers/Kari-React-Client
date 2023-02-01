@@ -172,7 +172,8 @@ async function handleSubmit(e) {
           placeholder="Ask a question or give a command"></input>
 
         <button className="submit-button" onClick={() => {handleSubmit();}}></button>
-        <input type="checkbox" id="search-live-info" className="search-live-info" value={searchLiveInfo} onChange={() => setSearchLiveInfo(!searchLiveInfo)}/>
+        <button className="submit-button" onClick={() => {setSearchLiveInfo(!searchLiveInfo); handleSubmit()}}></button>
+
 
       </form>
     </div>
