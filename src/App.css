@@ -10,7 +10,7 @@
 .sidemenu {
   width: 20%;
   padding: 10px;
-  background-color: #26434e;
+  background-color: #577a70;
 }
 .sidemenu h3 {
   font-size: 2.5rem;
@@ -33,7 +33,7 @@ padding:2%;
 position: absolute;
 bottom: 0;
 left:0; right:0;
-background-color: #c1d5dd;
+background-color: #c1dddd8e;
 }
 .chat-input-textarea {
   background-color: #FFFFFF;
@@ -65,7 +65,7 @@ background-color: #c1d5dd;
 }
 .chatbox {
   flex: 3;
-  background-color: #f1f4fc;
+  background-color: #f1fcfb;
   position: relative;
 }
 .chat-log {
@@ -78,7 +78,7 @@ background-color: #c1d5dd;
 .chat-message {
   float: right;
   font-size: .8em;
-  background-color: rgba(178, 225, 244, 0.431);
+  background-color: rgba(178, 244, 208, 0.431);
   margin-top:10px;
   max-width: 80%;
   min-width: 51%;
@@ -172,6 +172,74 @@ background-color: #c1d5dd;
   color:rgba(27, 32, 35, 0.431);
   font-size: .85em;
  }
+
+ .live-info-toggle {
+  background-color: #fafdae;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px;
+  font-size: 1.5em;
+  color: #4A4844;
+  transition: ease all .25s;
+ }
+
+  .live-info-toggle:hover {
+    background-color: #f7eddd;
+    transition: ease all .25s;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+
+  .slider-round {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 34px;
+  }
+
+  .slider-round:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  .live-info-toggle-text {
+    color: #4A4844;
+    font-size: 1.5em;
+    margin-left: 10px;
+  }
+
+.search-live-info-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #fafdae;
+}
 
 @media (max-width: 600px) {
 .App {

@@ -6,54 +6,118 @@ import { inject } from '@vercel/analytics';
 
 inject();
 
+// the handleSubmit front-end needs to be modified to call handleRequest if radio button is toggled yes. 
+
+
+// envs
 const orgId = process.env.ORG_ID;
 const apiKey = "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";
 
+
 function App() {
 
+  // statehooks
+  const [query, setQuery] = useState("");
+  const [chatLog, setChatLog] = useState([])
+  const [showOverlay, setShowOverlay] = useState(true);
+  const [searchLiveInfo, setSearchLiveInfo] = useState(false);
+
+  //open ai auth
   const configuration = new Configuration({
+    orgId: orgId,
     apiKey: apiKey,
   });
   const openai = new OpenAIApi(configuration);
 
-  async function getCompletion(message) {
+// First completion, sets the context as Kari.ai personality.
+  async function getInitialCompletion(query, messages) {
     const response = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: `"You are an artificial financial & investment advisor named Kari. When a user has a response that is non-conversational, simply affirmative, or you don't quite know how to respond to, just talk about your abilities again. There should never be a blank response. Don't correct the user's punctuation if they're lacking it. Ask one question at a time when lacking helpful context. Here is the prompt: ${message}"`,
-      max_tokens: 500,
-      temperature: .7,
+      prompt: `
+      Instructions: view the chatLog for context and respond to the latest message.
+      Context: You are an artificial financial advisor named Kari. 
+      Purpose: Your purpose is to help the user understand the data that is passed in.
+      Formatting: Money in USD, "$xxx,xxx.xx", concise, answers the question, asks 
+      leading questions to stimulate insights
+      Abilities: The user can choose to pull in live financial data summaries for you to process, 
+      so tell the user to enable the live info and then ask away.
+
+      latestMessage: ${query}
+      `,
+      max_tokens: 256,
+      temperature: .6,
       stop: "/n",
     });
     return response.data.choices[0].text;
   }
 
-  
-  const [input, setInput] = useState("");
-  const [chatLog, setChatLog] = useState([])
-  const [showOverlay, setShowOverlay] = useState(true);
+// Second completion, mainly just responds to messages in a conversational manner.
+  async function getContextCompletion(query, messages) {
+    const response = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: `
+      Instructions: view the chatLog for context and respond to the latest message.
+      chatLog: ${messages}
+      latestMessage: ${query}
+      `,
+      max_tokens: 256,
+      temperature: .6,
+      stop: "/n",
+    });
+    return response.data.choices[0].text;
+  }
 
+  // clearChat button function
   function clearChat(){
     setChatLog([]);
     setShowOverlay(true);
   }
 
-
-  
-// this should be the function that primes the bot with necessary context It will set. Then we will create another function that gets a response from the bot based on the context it already knows.
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (input.trim() && input.length > 4) {
-      let chatLogNew = [...chatLog, { user: "me", message: `${input}`}]
-      setInput("");
-      setChatLog(chatLogNew);
-      setShowOverlay(false);
-  
-      const messages = chatLogNew.map((message) => message.message).join("")
-  
-      const data = await getCompletion(messages);
-      setChatLog([...chatLogNew, { user: "gpt", message: `${data}`}])
+  // if messages array is empty, call getInitialCompletion
+  // if messages array is not empty, call getContextCompletion
+async function handleSubmit(e) {
+  e.preventDefault();
+  if (query.trim() && query.length > 4) {
+    let liveInfoResponse;
+    if (searchLiveInfo === (true)) {
+      console.log("Getting live Info Now")
+      liveInfoResponse = await getLiveInfo(query);
+      console.log(liveInfoResponse);
+    } else {
+      console.log("User did not request live info")
     }
+    let chatLogNew = [...chatLog, { user: "me", message: `${query}` + (liveInfoResponse ? ` ${liveInfoResponse}` : "")}]
+    setQuery("");
+    setChatLog(chatLogNew);
+    setShowOverlay(false);
+    const messages = chatLogNew.map((message) => message.message).join("");
+    let data;
+    let count = 0;
+    if (count === 0) {
+      console.log("Getting initial completion")
+      data = await getInitialCompletion(messages);
+      count++;
+    } else {
+      console.log("Getting context completion")
+      data = await getContextCompletion(messages);
+    }    setChatLog([...chatLogNew, { user: "gpt", message: `${data}`}])
   }
+}
+
+  async function getLiveInfo(query) {
+    var url = `https://kari-plugin-node-production.up.railway.app/api_search`;
+    console.log(`Sending ${query} to Server`);
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: {query} })
+    });
+    console.log(response.status);
+    const results = await response.json();
+    console.log(`Response received!`);
+    console.log(results);
+    return results;
+}
 
   return (
     <div className="App">
@@ -71,9 +135,9 @@ function App() {
           <div className="overlay-card-columns">
             <div className="overlay-card-column-example">
               <h3>Example Prompts:</h3>
-              <p onClick={() => setInput("What is the current stock price for SPY?")}>"What is the current stock price for SPY?"</p>
-              <p onClick={() => setInput("What are the best investment options for someone in their 20s with a moderate level of risk tolerance?")}>"What are the best investment options for someone in their 20s with a moderate level of risk tolerance?"</p>
-              <p onClick={() => setInput("What is your name and how can you actually help me with my finances?")}>"What is your name and how can you actually help me with my finances?"</p>
+              <p onClick={() => setQuery("What is the current stock price for SPY?")}>"What is the current stock price for SPY?"</p>
+              <p onClick={() => setQuery("What are the best investment options for someone in their 20s with a moderate level of risk tolerance?")}>"What are the best investment options for someone in their 20s with a moderate level of risk tolerance?"</p>
+              <p onClick={() => setQuery("What is your name and how can you actually help me with my finances?")}>"What is your name and how can you actually help me with my finances?"</p>
             </div>
             <div className="overlay-card-column">
               <h3>Current Limitations:</h3>
@@ -97,19 +161,20 @@ function App() {
           ))}
     </div>
     <div className="chat-input-holder">
-  <div className="stock-screening-tool">
-    <form onSubmit={handleSubmit}>
-      <input 
-        rows="1"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        className="chat-input-textarea"
-        placeholder="Ask a question or give a command"
-      />
-      <button className="submit-button" onClick={() => {handleSubmit();}}></button>
-    </form>
-  </div>
-  <p className='below-chatbox'>January 12 version. At this stage, feedback is very crucial. If you are beta-testing, please fill out <a href="https://forms.gle/YvjMHj8kPX7xDX2H8" target="_new">this form</a> and run through the feedback questions as it will help me a lot.</p>
+    <div className="stock-screening-tool">
+      <form onSubmit={handleSubmit}> 
+        <input 
+          rows="1"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="chat-input-textarea"
+          placeholder="Ask a question or give a command"></input>
+
+        <button className="submit-button" onClick={() => {handleSubmit();}}></button>
+        <input type="checkbox" id="search-live-info" name="search-live-info" value={searchLiveInfo} onChange={() => setSearchLiveInfo(!searchLiveInfo)} />
+      </form>
+    </div>
+  <p className='below-chatbox'>February 1 version. At this stage, feedback is very crucial. If you are beta-testing, please fill out <a href="https://forms.gle/YvjMHj8kPX7xDX2H8" target="_new">this form</a> and run through the feedback questions as it will help me a lot.</p>
 </div>
 </section>
 </div>
