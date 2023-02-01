@@ -43,6 +43,7 @@ function App() {
       so tell the user to enable the live info and then ask away.
 
       latestMessage: ${query}
+      chatLog: ${messages}
       `,
       max_tokens: 256,
       temperature: .6,
@@ -105,7 +106,7 @@ async function handleSubmit(e) {
 }
 
   async function getLiveInfo(query) {
-    var url = `https://kari-plugin-node-production.up.railway.app/api_search`;
+    var url = `kari-platform-node-production.up.railway.app/api_search`;
     console.log(`Sending ${query} to Server`);
     const response = await fetch(url, {
         method: 'POST',
@@ -170,8 +171,8 @@ async function handleSubmit(e) {
           className="chat-input-textarea"
           placeholder="Ask a question or give a command"></input>
 
-        <button className="submit-button" onClick={() => {handleSubmit();}}></button>
-        <input type="checkbox" id="search-live-info" name="search-live-info" value={searchLiveInfo} onChange={() => setSearchLiveInfo(!searchLiveInfo)} />
+        <button className="submit-button" onClick={() => {setSearchLiveInfo(false); handleSubmit();}}>Send</button>
+        <button className="submit-button" onClick={() => {setSearchLiveInfo(true); handleSubmit();}}>Search</button>
       </form>
     </div>
   <p className='below-chatbox'>February 1 version. At this stage, feedback is very crucial. If you are beta-testing, please fill out <a href="https://forms.gle/YvjMHj8kPX7xDX2H8" target="_new">this form</a> and run through the feedback questions as it will help me a lot.</p>

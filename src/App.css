@@ -34,10 +34,28 @@ position: absolute;
 bottom: 0;
 left:0; right:0;
 background-color: #c1dddd8e;
+display: flex;
+flex-direction: column;
+}
+
+.checkbox-label {
+  font-size: 1.4em;
+  margin-left: 0.5em;
+  }
+
+
+.search-live-info {
+  content: "";
+  width: em;
+  height: 2em;
+  margin-left: .5em;
+  margin-right: 0.5em;
+  border-radius: 75%;
+  border: 2px solid #333;
 }
 .chat-input-textarea {
   background-color: #FFFFFF;
-  width: 90%;
+  width: 80%;
   padding: 12px;
   color: #202123;
   font-size: 1.25em;
@@ -49,18 +67,18 @@ background-color: #c1dddd8e;
   box-shadow: 0 0px 8px 0 rgba(0,0,0,0.15)
 }
 .submit-button {
-  height: 40px;
-  width: 40px;
+  height: 3em;
+  width: 3m;
   padding: 10px;
   margin-left: 10px;
   border: none;
-  box-shadow: 0 0px 8px 0 rgba(0,0,0,0.15);
-  border-radius: 25px;
+  box-shadow: 0 0px 8px 0 rgba(0,0,0,0.05);
+  border-radius: 15px;
   transition: ease all .25s;
   background-color: #fafdae;
 }
 .submit-button:hover {
-  background-color: #fafdae;
+  background-color: #eeefc4;
   transition: ease all .25s
 }
 .chatbox {
@@ -262,11 +280,10 @@ display: none;
   color: white;
 }
 
-.chat-input-holder {
-}
 .chat-input-textarea {
-  margin-top: 10px;
-  max-width: 80%;
+  margin-top: 0px;
+  max-width: 65%;
+  border-radius: 15px;
 }
 .submit-button {
   background-color:#fafdae
@@ -330,6 +347,14 @@ overflow-y: scroll;
   font-size: .8rem;
   color:rgba(27, 32, 35, 0.431)
  }
+}
+
+.stock-screening-tool {
+  align-items: left;
+  width: 100%;
+  padding: 10px;
+  border-radius: 15px;
+  background-color: hsl(0, 0%, 100%);
 }
 
 @media (min-width: 600px) and (max-width: 1030px) {
