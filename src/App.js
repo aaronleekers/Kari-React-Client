@@ -171,8 +171,9 @@ async function handleSubmit(e) {
           className="chat-input-textarea"
           placeholder="Ask a question or give a command"></input>
 
-        <button className="submit-button" onClick={() => {setSearchLiveInfo(false); handleSubmit();}}>Send</button>
-        <button className="submit-button" onClick={() => {setSearchLiveInfo(true); handleSubmit(query);}}>Search</button>
+        <button className="submit-button" onClick={() => {handleSubmit();}}></button>
+        <input type="checkbox" id="search-live-info" className="search-live-info" value={searchLiveInfo} onChange={() => setSearchLiveInfo(!searchLiveInfo)}/>
+
       </form>
     </div>
   <p className='below-chatbox'>February 1 version. At this stage, feedback is very crucial. If you are beta-testing, please fill out <a href="https://forms.gle/YvjMHj8kPX7xDX2H8" target="_new">this form</a> and run through the feedback questions as it will help me a lot.</p>
