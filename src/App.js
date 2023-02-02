@@ -143,7 +143,6 @@ async function getLiveInfo(query) {
 <aside className="sidemenu"> 
   <h3 className="sidemenu-header">Kari</h3>
    <button className="side-menu-button" onClick={clearChat}> Clear Chat </button> 
-   <button className="side-menu-button" onClick={() => window.open("https://forms.gle/6rQ4nsWddMqPgsCw9")}> Join Waitlist </button> 
    </aside>
       <section className="chatbox">
       {showOverlay && (
