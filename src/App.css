@@ -55,16 +55,16 @@ flex-direction: column;
 }
 .chat-input-textarea {
   background-color: #FFFFFF;
-  width: 80%;
+  width: 75%;
   padding: 12px;
   color: #202123;
-  font-size: 1.25em;
-  border-radius: 5px;
+  font-size: 1em;
+  border-radius: 15px;
   border: none;
   border-color: none;
   margin: 0px;
   outline: none;
-  box-shadow: 0 0px 8px 0 rgba(0,0,0,0.15)
+  box-shadow: 0 0px 8px 0 rgba(0,0,0,0.1)
 }
 .submit-button {
   height: 3em;
@@ -282,7 +282,7 @@ display: none;
 
 .chat-input-textarea {
   margin-top: 0px;
-  max-width: 65%;
+  max-width: 50%;
   border-radius: 15px;
 }
 .submit-button {
@@ -387,7 +387,7 @@ overflow-y: scroll;
 @media (min-width: 600px) and (max-width: 650px) {
   .chat-input-textarea {
     margin-top: 10px;
-    max-width: 80%;
+    max-width: 60%;
   }
   .submit-button {
     background-color:#fafdae
