@@ -10,103 +10,100 @@
 .sidemenu {
   width: 20%;
   padding: 10px;
-  background-color: #577a70;
+  background-color: white;
+  border-right: 1px solid black;
 }
 .sidemenu h3 {
   font-size: 2.5rem;
+  color: black;
 }
 .side-menu-button {
+  background-color: rgba(255,255,255,0.0);
   text-align: center;
-  border: .9px solid white;
+  color: black;;
+  border: 1.2px solid black;;
   border-radius: 20px;
   transition:ease 0.25s all;
   font-size: 18px;
-  padding: 10%;
+  padding-top: 5%;
+  padding-bottom: 5%;
+  padding-left: 10%;
+  padding-right: 10%;
   margin-top: 10px;
 }
 .side-menu-button:hover {
- background-color: rgba(255,255,255,0.7);
- border: 1px solid rgba(255,255,255,0.7);
+ border: 1px solid #7BAF73;
+ color: #7BAF73;
+ background-color: #7baf7317;
 }
 .chat-input-holder {
 padding:2%;
 position: absolute;
 bottom: 0;
 left:0; right:0;
-background-color: #c1dddd8e;
+background-color: #fefefe;
 display: flex;
 flex-direction: column;
+border-top: 1px solid black;
+overflow-y: hidden;
 }
 
-.checkbox-label {
-  font-size: 1.4em;
-  margin-left: 0.5em;
-  }
-
-
-.search-live-info {
-  content: "";
-  width: em;
-  height: 2em;
-  margin-left: .5em;
-  margin-right: 0.5em;
-  border-radius: 75%;
-  border: 2px solid #333;
-}
 .chat-input-textarea {
   background-color: #FFFFFF;
-  width: 75%;
+  width: 64%;
   padding: 12px;
   color: #202123;
   font-size: 1em;
   border-radius: 15px;
-  border: none;
-  border-color: none;
-  margin: 0px;
+  border: 1px solid #000000;
+  margin: 10px;
+  margin-bottom: 20px;
   outline: none;
   box-shadow: 0 0px 8px 0 rgba(0,0,0,0.1)
 }
 .submit-button {
-  height: 3em;
-  width: 3m;
+  border: 1px solid #000000;
+  height: 2.8em;
+  width: 5em;
   padding: 10px;
   margin-left: 10px;
-  border: none;
   box-shadow: 0 0px 8px 0 rgba(0,0,0,0.05);
   border-radius: 15px;
   transition: ease all .25s;
-  background-color: #fafdae;
+  background-color: #ffffff;
 }
 .submit-button:hover {
-  background-color: #eeefc4;
-  transition: ease all .25s
+  background-color: #7BAF73;
+  transition: ease all .25s;
+  color: white;
 }
 .chatbox {
   flex: 3;
-  background-color: #f1fcfb;
+  background-color: #ffffff;
   position: relative;
 }
 .chat-log {
   text-align: left;
   height: 76.5%;
   overflow-y: scroll;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 8.5%;
+  padding-right: 8.5%;
 }
 .chat-message {
   float: right;
   font-size: .8em;
-  background-color: rgba(178, 244, 208, 0.431);
-  margin-top:10px;
+  margin-top:20px;
   max-width: 80%;
-  min-width: 51%;
+  min-width: 70%;
   padding-left: 0px;
-  border-radius: 25px;
-  padding: 1.45%;
-  align-content: right;
+  background-color: rgba(221, 246, 228, 0.808);
+  border: 1px solid #7BAF73;
+  border-radius: 15px;
+  padding: 2.0%;
 }
+
 .chat-message.chatgpt {
-  background-color: #f5f5b9ce;
+  background-color: rgba(221, 246, 228, 0.212);
   font-size: .8em;
   border-radius: 20px;
   float: left;
@@ -138,6 +135,7 @@ flex-direction: column;
   margin: auto;
   margin-top: 40px
 }
+
 .overlay-card-columns {
   display: flex;
 }
@@ -175,20 +173,24 @@ flex-direction: column;
 .overlay-card p {
   font-weight: 300;
   font-size: 1rem;
+  background-color: hsl(115, 100%, 98%);
   color: #4A4844;
-  background-color: #fafdae;
+  border: 1px solid #7BAF73;
   padding: 10px;
   width: 100%;
   margin-bottom: 10px;
   border-radius: 10px;
 }
 .overlay-card-column-example p:hover {
-  background-color: #f7eddd;
+  background-color: #7BAF73;
+  color: white;
   transition: background-color 0.15s ease;
 }
 .below-chatbox {
   color:rgba(27, 32, 35, 0.431);
-  font-size: .85em;
+  font-size: 1em;
+  padding-left: 5%;
+  padding-right: 5%;
  }
 
  .live-info-toggle {
@@ -276,19 +278,23 @@ display: none;
   padding: 10px;
   width: 100%;
   border-radius: 10px;
-  background-color: rgba(187, 187, 249, 0.716);
-  color: white;
 }
 
 .chat-input-textarea {
   margin-top: 0px;
   max-width: 50%;
   border-radius: 15px;
+  font-size: .8em;
 }
 .submit-button {
-  background-color:#fafdae
+  margin-top: 0px;
+  max-width: 20%;
+  border-radius: 10px;
+  font-size: .8em;
 }
 .submit-button:hover {
+  background-color: #7BAF73;
+  transition: ease all .25s;
 }
 .chatbox {
   overflow-y: scroll;
@@ -303,30 +309,11 @@ overflow-y: scroll;
   padding-right: 10px;
   border-radius: 15px;
 }
-.chat-message.chatgpt {
-}
-.chat-message-center {
-}
-.avatar {
-}
-.avatar.chatgpt {
-}
-.message {
-}
 .overlay-card {
   max-width: 100%;
   display: flex;
   flex-direction: column;
   overflow-y: scroll;
-}
-.overlay-card-columns {
-
-}
-.overlay-card-column {
-}
-.overlay-card-column-example {
-}
-.overlay-card-column:last-child {
 }
 .overlay-card h2 {
   font-size: 1.5rem;
@@ -335,61 +322,52 @@ overflow-y: scroll;
   font-size: 1.2rem;
 }
 .overlay-card p {
-  font-size: 0.5rem;
+  font-size: 0.8rem;
   width: 100%;
   margin-top: 0px;
   padding: 8px;
   border-radius: 10px;
 }
-.overlay-card-column-example p:hover {
-}
 .below-chatbox {
-  font-size: .8rem;
-  color:rgba(27, 32, 35, 0.431)
+  display: none;
  }
-}
-
-.stock-screening-tool {
-  align-items: left;
-  width: 100%;
-  padding: 10px;
-  border-radius: 15px;
-  background-color: hsl(0, 0%, 100%);
 }
 
 @media (min-width: 600px) and (max-width: 1030px) {
   .overlay-card p {
-    font-size: 0.65rem;
+    font-size: 0.8rem;
     width: 100%;
     margin-top: 0px;
-    padding: 8px;
+    padding: 10px;
     border-radius: 10px;
 }
 .overlay-card h3 {
   font-size: 1em;
 }
+.chat-input-textarea {
+  margin-top: 10px;
+  max-width: 55%;
+  margin-bottom: 25px;
+}
 }
 
 @media (max-width: 400px) {
-  .overlay-card {
-    
-  }
-
-  .overlay-card h3 {
-    font-size: 15px;
-  }
-
   .overlay-card p { 
-    font-size: 9px;
+    font-size: .8em;
+  }
+  .submit-button {
+    background-color: #20212300;
   }
 }
+
 
 @media (min-width: 600px) and (max-width: 650px) {
   .chat-input-textarea {
     margin-top: 10px;
-    max-width: 60%;
+    max-width: 55%;
+    margin-bottom: 25px;
   }
-  .submit-button {
-    background-color:#fafdae
+  .below-chatbox {
+    display: none;
   }
 }

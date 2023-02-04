@@ -8,31 +8,28 @@ import Slider from 'react-slick';
 
 inject();
 
-// the handleSubmit front-end needs to be modified to call handleRequest if radio button is toggled yes. 
-
 
 // envs
 const orgId = process.env.ORG_ID;
 const apiKey = "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";
 
-
 function App() {
 
-  // statehooks
-  const [query, setQuery] = useState("");
-  const [chatLog, setChatLog] = useState([])
-  const [showOverlay, setShowOverlay] = useState(true);
-  const [searchLiveInfo, setSearchLiveInfo] = useState(false);
-  const [search, setSearch] = useState("Search");
-  const [count, setCount] = useState(0);
+// statehooks
+const [query, setQuery] = useState("");
+const [chatLog, setChatLog] = useState([])
+const [showOverlay, setShowOverlay] = useState(true);
+const [searchLiveInfo, setSearchLiveInfo] = useState(false);
+const [search, setSearch] = useState("Search");
+const [count, setCount] = useState(0);
 
 
-  //open ai auth
-  const configuration = new Configuration({
-    orgId: orgId,
-    apiKey: apiKey,
-  });
-  const openai = new OpenAIApi(configuration);
+//open ai auth
+const configuration = new Configuration({
+  orgId: orgId,
+  apiKey: apiKey,
+});
+const openai = new OpenAIApi(configuration);
 
 // First completion, sets the context as Kari.ai personality.
   async function getInitialCompletion(query) {
@@ -118,9 +115,6 @@ function App() {
     }
   }
   
-
-
-
 async function getLiveInfo(query) {
     setSearch("Loading...");
     var url = `https://kari-platform-node-production.up.railway.app/api_search`;
@@ -139,10 +133,10 @@ async function getLiveInfo(query) {
 }
 
   return (
-    <div className="App">
+    <div className="App"> 
 <aside className="sidemenu"> 
-  <h3 className="sidemenu-header">Kari</h3>
-   <button className="side-menu-button" onClick={clearChat}> Clear Chat </button> 
+  <h3 className="sidemenu-header">Kari</h3> 
+   <button className="side-menu-button" onClick={clearChat}> + New Chat </button> 
    </aside>
       <section className="chatbox">
       {showOverlay && (
@@ -189,7 +183,6 @@ async function getLiveInfo(query) {
         <button className="submit-button" onClick={() => {setSearchLiveInfo(true); handleSubmit()}}>{search}</button>
       </form>
     </div>
-  <p className='below-chatbox'>February 1 version. At this stage, feedback is very crucial. If you are beta-testing, please fill out <a href="https://forms.gle/YvjMHj8kPX7xDX2H8" target="_new">this form</a> and run through the feedback questions as it will help me a lot.</p>
 </div>
 </section>
 </div>
