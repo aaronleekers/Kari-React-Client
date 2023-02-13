@@ -3,11 +3,12 @@ import './normal.css'
 import { useState } from 'react';
 import { Configuration, OpenAIApi } from 'openai';
 import { inject } from '@vercel/analytics';
-import Slider from 'react-slick';
-
+import { KariFinancialAnalyst } from './Models/KariFinancialAnalyst';
+import { KariSportsAnalyst } from './Models/KariSportsAnalyst';
+import { KariRealEstateAnalyst } from './Models/KariRealEstateAnalyst';
+import { KariMarketingAnalyst } from './Models/KariMarketingAnalyst';
 
 inject();
-
 
 // envs
 const orgId = process.env.ORG_ID;
@@ -19,10 +20,8 @@ function App() {
 const [query, setQuery] = useState("");
 const [chatLog, setChatLog] = useState([])
 const [showOverlay, setShowOverlay] = useState(true);
-const [searchLiveInfo, setSearchLiveInfo] = useState(false);
-const [search, setSearch] = useState("Search");
 const [count, setCount] = useState(0);
-
+const [dataSource, setDataSource] = useState([]);
 
 //open ai auth
 const configuration = new Configuration({
@@ -62,7 +61,7 @@ const openai = new OpenAIApi(configuration);
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: `
-      Don't mention outright: Conversational Style, Context, Instructions.
+      Don't mention outright: Context
       Instructions: view the chatLog for context and respond to the latest message.
       Context: You are an artificial financial advisor named Kari. 
 
@@ -77,60 +76,78 @@ const openai = new OpenAIApi(configuration);
   }
 
   // clearChat button function
-  function clearChat(){
+  async function clearChat(){
     setCount(0);
     setChatLog([]);
     setShowOverlay(true);
   }
-
-
+  
   // if messages array is empty, call getInitialCompletion
   // if messages array is not empty, call getContextCompletion
   async function handleSubmit(e) {
     e.preventDefault();
-    if (query.trim() && query.length > 4) {
-      let liveInfoResponse;
-      if (searchLiveInfo === (true)) {
-        console.log("Getting live Info Now");
-        liveInfoResponse = await getLiveInfo(query);
-        console.log(liveInfoResponse);
-      } else {
-        console.log("User did not request live info");
+    if (!query.trim() || query.length <= 4 || !dataSource.length) {
+      if (!dataSource.length) {
+        alert("Please select a data source");
+        return;
       }
-      let chatLogNew = [...chatLog, { user: "me", message: `${query}` + (liveInfoResponse ? ` ${liveInfoResponse}` : "")}];
-      setQuery("");
-      setChatLog(chatLogNew);
-      setShowOverlay(false);
-      const messages = chatLogNew.map((message) => message.message).join("");
-      let data;
-      if (count === 0) {
-        console.log("Getting initial completion");
-        data = await getInitialCompletion(messages);
-        setCount(count + 1);
-      } else {
-        console.log("Getting context completion");
-        data = await getContextCompletion(query, messages);
-      }
-      setChatLog([...chatLogNew, { user: "gpt", message: `${data}`}]);
+      return;
     }
+  
+    console.log(`Running query with selected dataSource: ${dataSource} and query: ${query}`);
+    const chatLogNew = [...chatLog, { user: "me", message: `${query}` }];
+    setChatLog(chatLogNew);
+    setShowOverlay(false);
+  
+    const messages = chatLogNew.map(message => message.message).join("");
+    const completion = await fetchChatMessageCompletion(query, messages, count);
+    setCount(count + 1);
+    setChatLog([...chatLogNew, { user: "gpt", message: `${completion}` }]);
+    setQuery("");
   }
   
-async function getLiveInfo(query) {
-    setSearch("Loading...");
-    var url = `https://kari-platform-node-production.up.railway.app/api_search`;
-    console.log(`Sending ${query} to Server`);
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: {query} })
-    });
-    console.log(response.status);
-    const results = await response.json();
-    console.log(`Response received!`);
-    console.log(results);
-    setSearch("Search");
-    return results;
-}
+  async function fetchChatMessageCompletion(query, messages, count) {
+    console.log("Getting live info");
+    const liveInfoResponse = await getLiveInfo(query);
+    console.log("Live info response: ", liveInfoResponse);
+  
+    if (count === 0) {
+      console.log("Getting initial completion");
+      return getInitialCompletion(liveInfoResponse, query);
+    }
+    console.log("Getting context completion");
+    return getContextCompletion(query, messages, liveInfoResponse);
+  }
+  
+  async function getLiveInfo(query) {
+    console.log("Checking which data source to use");
+    if (dataSource === "KariFinancialAnalyst") {
+      console.log("Using KariFinancialAnalyst")
+      const response = await KariFinancialAnalyst(query);
+      console.log("Response from KariFinancialAnalyst: ", response);
+      return response;
+    } else if (dataSource === "KariSportsAnalyst") {
+      console.log("Using KariSportsAnalyst")
+      const response = await KariSportsAnalyst(query);
+      return response;
+    } else if (dataSource === "KariRealEstateAnalyst") {
+      console.log("Using KariRealEstateAnalyst")
+      const response = await KariRealEstateAnalyst(query);
+      return response;
+    } else if (dataSource === "KariMarketingAnalyst") {
+      console.log("Using KariMarketingAnalyst")
+      const response = await KariMarketingAnalyst(query);
+      return response;
+    } else {
+      console.error("Error: No data source was selected.");
+      return;
+    }       
+  }
+
+
+async function handleDataSource (e) {
+  setDataSource(e.target.value);
+};
 
   return (
     <div className="App"> 
@@ -179,8 +196,14 @@ async function getLiveInfo(query) {
           className="chat-input-textarea"
           placeholder="Ask a question or give a command"></input>
 
-        <button className="submit-button" onClick={() => {setSearchLiveInfo(false); handleSubmit();}}>Send</button>
-        <button className="submit-button" onClick={() => {setSearchLiveInfo(true); handleSubmit()}}>{search}</button>
+        <button className="submit-button" onClick={() => {handleSubmit();}}>Send</button>
+      <select value={dataSource} onChange={handleDataSource}>
+      <option value="">Select an option</option>
+      <option value="KariFinancialAnalyst">Kari Financial Analyst Model</option>
+      <option value="KariSportsAnalyst">Kari Sports Analyst Model</option>
+      <option value="KariRealEstateAnalyst">Kari Real Estate Analyst Model</option>
+      <option value="KariMarketingAnalyst">Kari Marketing Analyst Model</option>
+    </select>        
       </form>
     </div>
 </div>
@@ -188,42 +211,6 @@ async function getLiveInfo(query) {
 </div>
   );
 }
-// array text strings to display
-
-const text = [
-  "Compare the stocks TSLA, AAPL, MCD",
-  "Compare Ford, General Motors, and Tesla's price performance on January 25, 2023.",
-  "What are the fundamentals of bitcoin?",
-  "What is the max supply of Avalanche?",
-  "What is the market dominance of Ethereum?",
-  "How has the SPY performed over the last year?",
-  "How has Microsoft performed between jan 2019 and jan 2020?",
-  "Get me historical performance for SPY over the last week",
-  "What is the current price of SPY?",
-  "What are the latest price movements of AMZN?",
-  "What the current volume traded for SPY?",
-  "What is the current interest rate for the US?",
-  "What is the total population of the US?",
-  "What is the annual population growth of the US?",
-  "What is the current inflation rate of the US?",
-  "What is the current CPI for the US?",
-  "What is the current GDP of the US?",
-  "What is the current GDP per capita of the US?",
-  "What is the GDP growth of the US this year?",
-  "What is the current debt to GDP ratio?",
-  "What is the current GNI?",
-  "What is the current GNI per capita?",
-  "What is the current fertility rate of the US?",
-  "What is the current unemployment rate?",
-  "Get me the latest balance sheet for AAPL",
-  "Get me the latest income statement for AAPL",
-  "Get me the latest cash flow statement for AAPL",
-  "Get me the latest statement of shareholders equity for AAPL",
-  "How much did Apple earn this year?",
-  "How much cash does AAPL have on its balance sheet?",
-  "How much cash flow came from investing activities for AAPL"
-]
-
 
 const ChatMessage = ({ message }) => {
   return (
