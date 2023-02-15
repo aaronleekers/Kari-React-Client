@@ -30,6 +30,12 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+
+/**
+ * The function takes in a string, and returns a string
+ * @param query - the user's message
+ * @returns The response from the OpenAI API.
+ */
 // First completion, sets the context as Kari.ai personality.
   async function getInitialCompletion(query) {
     const response = await openai.createCompletion({
@@ -56,7 +62,13 @@ const openai = new OpenAIApi(configuration);
     return response.data.choices[0].text;
   }
 
-// Second completion, mainly just responds to messages in a conversational manner.
+
+/**
+ * The function takes in a query and a chatLog, and returns a response
+ * @param query - the latest message from the user
+ * @param messages - the chatlog of the conversation
+ * @returns The response from the OpenAI API.
+ */
   async function getContextCompletion(query, messages) {
     const response = await openai.createCompletion({
       model: "text-davinci-003",
@@ -75,15 +87,29 @@ const openai = new OpenAIApi(configuration);
     return response.data.choices[0].text;
   }
 
-  // clearChat button function
+
+/**
+ * It clears the chat log and resets the count to 0.
+ */
   async function clearChat(){
     setCount(0);
     setChatLog([]);
     setShowOverlay(true);
   }
+
   
-  // if messages array is empty, call getInitialCompletion
-  // if messages array is not empty, call getContextCompletion
+/**
+ * `handleSubmit` is an async function that takes an event as an argument. It prevents the default
+ * action of the event, and then checks if the query is empty, or if the query is less than 4
+ * characters, or if the data source is empty. If any of these conditions are true, it returns.
+ * Otherwise, it creates a new chat log with the user's message, and sets the chat log to this new chat
+ * log. It then sets the show overlay state to false, and creates a string of all the messages in the
+ * chat log. It then calls the `fetchChatMessageCompletion` function, passing in the query, the
+ * messages string, and the count. It then increments the count by 1, and sets the chat log to the new
+ * chat log with the GPT-3 response. It then sets the query to an empty string
+ * @param e - the event object
+ * @returns A list of the top 10 most common words in the text.
+ */
   async function handleSubmit(e) {
     e.preventDefault();
     if (!query.trim() || query.length <= 4 || !dataSource.length) {
@@ -93,62 +119,75 @@ const openai = new OpenAIApi(configuration);
       }
       return;
     }
-  
-    console.log(`Running query with selected dataSource: ${dataSource} and query: ${query}`);
     const chatLogNew = [...chatLog, { user: "me", message: `${query}` }];
     setChatLog(chatLogNew);
     setShowOverlay(false);
-  
     const messages = chatLogNew.map(message => message.message).join("");
     const completion = await fetchChatMessageCompletion(query, messages, count);
     setCount(count + 1);
     setChatLog([...chatLogNew, { user: "gpt", message: `${completion}` }]);
     setQuery("");
   }
-  
-  async function fetchChatMessageCompletion(query, messages, count) {
-    console.log("Getting live info");
-    const liveInfoResponse = await getLiveInfo(query);
-    console.log("Live info response: ", liveInfoResponse);
-  
-    if (count === 0) {
-      console.log("Getting initial completion");
-      return getInitialCompletion(liveInfoResponse, query);
-    }
-    console.log("Getting context completion");
-    return getContextCompletion(query, messages, liveInfoResponse);
-  }
-  
-  async function getLiveInfo(query) {
-    console.log("Checking which data source to use");
+ 
+
+
+/**
+ * It takes in a query, a list of messages, and a count. It then calls the getLiveInfo function, which
+ * returns a promise. If the count is 0, it calls the getInitialCompletion function, which returns a
+ * promise. If the count is not 0, it calls the getContextCompletion function, which returns a promise
+ * @param query - The query string that the user has typed so far.
+ * @param messages - an array of messages that have been sent in the chat.
+ * @param count - The number of messages that have been sent in the current chat session.
+ * @returns A promise that resolves to an array of objects.
+ */
+function fetchChatMessageCompletion(query, messages, count) {
+  return getLiveInfo(query)
+    .then(liveInfoResponse => {
+      console.log("Live info response: ", liveInfoResponse);
+
+      if (count === 0) {
+        return getInitialCompletion(liveInfoResponse, query);
+      }
+      return getContextCompletion(query, messages, liveInfoResponse);
+    })
+    .catch(error => console.error(error));
+}
+
+/**
+ * It returns the result of the function that matches the data source that was selected
+ * @param query - The query that you want to ask the bot.
+ * @returns The function getLiveInfo is being returned.
+ */
+  function getLiveInfo(query) {
     if (dataSource === "KariFinancialAnalyst") {
-      console.log("Using KariFinancialAnalyst")
-      const response = await KariFinancialAnalyst(query);
-      console.log("Response from KariFinancialAnalyst: ", response);
+      const response = KariFinancialAnalyst(query);
       return response;
     } else if (dataSource === "KariSportsAnalyst") {
-      console.log("Using KariSportsAnalyst")
-      const response = await KariSportsAnalyst(query);
+      const response = KariSportsAnalyst(query);
       return response;
     } else if (dataSource === "KariRealEstateAnalyst") {
-      console.log("Using KariRealEstateAnalyst")
-      const response = await KariRealEstateAnalyst(query);
+      const response = KariRealEstateAnalyst(query);
       return response;
     } else if (dataSource === "KariMarketingAnalyst") {
-      console.log("Using KariMarketingAnalyst")
-      const response = await KariMarketingAnalyst(query);
+      const response = KariMarketingAnalyst(query);
       return response;
     } else {
       console.error("Error: No data source was selected.");
       return;
-    }       
+    }
   }
-
-
+  
+/**
+ * It takes the value of the selected option in the dropdown menu and sets the state of the dataSource
+ * variable to that value
+ * @param e - the event object
+ */
 async function handleDataSource (e) {
   setDataSource(e.target.value);
 };
 
+/* The above code is the main component of the application. It is the main container for the
+application. It is the main component that is rendered to the screen. */
   return (
     <div className="App"> 
 <aside className="sidemenu"> 
@@ -212,6 +251,10 @@ async function handleDataSource (e) {
   );
 }
 
+/**
+ * It takes a message object as a prop, and returns a div with a class of chat-message, and a div with
+ * a class of message
+ */
 const ChatMessage = ({ message }) => {
   return (
     <div className="clearfix">

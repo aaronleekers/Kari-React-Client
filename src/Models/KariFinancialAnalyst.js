@@ -7,6 +7,9 @@ import { Crowdsense } from './APIs/Crowdsense';
 import { SECFilings } from './APIs/SECFilings';
 
 
+
+// LAST LEFT OFF ON: Figuring out how to get the workflow to run in sequence without fucking up.
+
 const orgId = process.env.ORG_ID;
 const apiKey = "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";
 
@@ -18,29 +21,31 @@ const configuration = new Configuration({
 
 export function KariFinancialAnalyst(query) {
 
+    workflow(query).then(result => {
+        console.log(result);
+        return workflow;
+        });
+    
+
     // maps possible requestTypes to an array of associated functions for callback. functions are below.
     const requestFunctions = {
-        1: AlphaVantage, // 
+        1: AlphaVantage, //
         2: WallStreetBets, //  
         3: StockSentimentAPI, //
         4: GFinance, //  
         5: Crowdsense, // 
         6: SECFilings, 
     }
-   
+
     // overall workflow. Decides which sub-workflow to execute, executes it, then returns the response.
-    async function api_search(query) {
-        console.log("api_search called with queryString:", query);
-        const requestType = await getRecommendedDataSources(query);
-        // extract the number from the string
-        const intRequest = parseInt(requestType.match(/\d+/)[0]);
-        console.log("Request Type:",intRequest);
-        const requestOutput = await requestFunctions[intRequest](query);
+   async function workflow(query) {
+        console.log("Step 1: gettingRecommendedDataSources")
+        const requestType = await getRecommendedDataSources(query); // NOTE: this is a promise.
+        console.log("Step 2 getting response from requested function:",requestType);
+        const requestOutput = await requestFunctions[requestType](query);
         return requestOutput;
     }
-   
-    // This is basically going to determine what sources should be queried to get an ideal response
-    // It will send the query to each of the dataSources and get a response.
+    
     async function getRecommendedDataSources(query) {
     const response = await openai.createCompletion({
         model: "text-davinci-003",
@@ -64,15 +69,8 @@ export function KariFinancialAnalyst(query) {
         temperature: .5,
         stop: "/n",
     });
-    return response.data.choices[0].text;
-    }
-
-    return api_search(query);
-
-
-// Send the query to each of the dataSources
-// Get the response from each of the dataSources
-// Parse the response from each of the dataSources
-// Combine the response from each of the dataSources
-// Return the summarized response.
+    const requestType = response.data.choices[0].text;
+  const intRequest = parseInt(requestType.match(/\d+/)[0]);
+  return intRequest;
+}
 }
