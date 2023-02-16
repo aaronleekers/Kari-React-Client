@@ -10,6 +10,15 @@ import { KariMarketingAnalyst } from './Models/KariMarketingAnalyst';
 
 inject();
 
+// TO DO:
+// 1. Set up KariFinancialAnalyst to judge the vagueness of requests.
+// 2. Set up KariFinancialAnalyst to return multiple data sources based on the query if the request is more than 50% vague.
+// 3. If request is more than 50% vague, it will generate a list of more specific questions that support the answer of the vague question, to pull from.
+    // for example, if the user asks "What is the current price of AAPL?", Kari will judge the vagueness of that question, and then assemble it into an API call if it is less than 50% vague.
+    // However, if the user asks a more vague question such as "What stocks are hot right now?", Kari will convert the request into a list of more specific questions, such as "Get me the WSB top 10 stocks" which will be saved to a variable and then ran through the KariFinancialAnalyst function as query.
+// 4. Set up KariFinancialAnalyst to await for all the data sources to arrive, and then assemble it into a large report.
+// 5. Add front end status updates for the user to see what Kari is doing.
+
 // envs
 const orgId = process.env.ORG_ID;
 const apiKey = "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";
@@ -22,6 +31,8 @@ const [chatLog, setChatLog] = useState([])
 const [showOverlay, setShowOverlay] = useState(true);
 const [count, setCount] = useState(0);
 const [dataSource, setDataSource] = useState([]);
+const [searchLiveInfo, setSearchLiveInfo] = useState(false);
+const [search, setSearch] = useState("Search");
 
 //open ai auth
 const configuration = new Configuration({
@@ -30,14 +41,14 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-
+// NO NEED TO TOUCH THIS
 /**
  * The function takes in a string, and returns a string
  * @param query - the user's message
  * @returns The response from the OpenAI API.
  */
 // First completion, sets the context as Kari.ai personality.
-  async function getInitialCompletion(query) {
+  async function getInitialCompletion(query, liveInfoResponse) {
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: `
@@ -54,15 +65,16 @@ const openai = new OpenAIApi(configuration);
       future plans for platform: Charting, Personalized Advice, Alternative Data Sources, Intelligent insight generation, and more. 
 
       latestMessage: ${query}
+      Data Summary Passed in: ${liveInfoResponse}
       `,
       max_tokens: 2048,
       temperature: .6,
       stop: "/n",
     });
     return response.data.choices[0].text;
-  }
+  } 
 
-
+// NO NEED TO TOUCH THIS
 /**
  * The function takes in a query and a chatLog, and returns a response
  * @param query - the latest message from the user
@@ -87,7 +99,7 @@ const openai = new OpenAIApi(configuration);
     return response.data.choices[0].text;
   }
 
-
+// NO NEED TO TOUCH THIS
 /**
  * It clears the chat log and resets the count to 0.
  */
@@ -96,8 +108,16 @@ const openai = new OpenAIApi(configuration);
     setChatLog([]);
     setShowOverlay(true);
   }
+// NO NEED TO TOUCH THIS
+/**
+ * It takes the value of the selected option in the dropdown menu and sets the state of the dataSource
+ * variable to that value
+ * @param e - the event object
+ */
+async function handleDataSource (e) {
+  setDataSource(e.target.value);
+};
 
-  
 /**
  * `handleSubmit` is an async function that takes an event as an argument. It prevents the default
  * action of the event, and then checks if the query is empty, or if the query is less than 4
@@ -110,47 +130,34 @@ const openai = new OpenAIApi(configuration);
  * @param e - the event object
  * @returns A list of the top 10 most common words in the text.
  */
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!query.trim() || query.length <= 4 || !dataSource.length) {
-      if (!dataSource.length) {
-        alert("Please select a data source");
-        return;
-      }
-      return;
+async function handleSubmit(e) {
+  e.preventDefault();
+  if (query.trim() && query.length > 4) {
+    let liveInfoResponse;
+    if (searchLiveInfo === (true)) {
+      console.log("Getting live Info Now");
+      liveInfoResponse = await getLiveInfo(query);
+      console.log(liveInfoResponse);
+    } else {
+      console.log("User did not request live info");
     }
-    const chatLogNew = [...chatLog, { user: "me", message: `${query}` }];
+    let chatLogNew = [...chatLog, { user: "me", message: `${query}` + (liveInfoResponse ? ` ${liveInfoResponse}` : "")}];
+    setQuery("");
     setChatLog(chatLogNew);
     setShowOverlay(false);
-    const messages = chatLogNew.map(message => message.message).join("");
-    const completion = await fetchChatMessageCompletion(query, messages, count);
-    setCount(count + 1);
-    setChatLog([...chatLogNew, { user: "gpt", message: `${completion}` }]);
-    setQuery("");
+    const messages = chatLogNew.map((message) => message.message).join("");
+    let data;
+    if (count === 0) {
+      console.log("Getting initial completion");
+      data = await getInitialCompletion(messages);
+      setCount(count + 1);
+    } else {
+      console.log("Getting context completion");
+      data = await getContextCompletion(query, messages);
+    }
+    setSearchLiveInfo(false);
+    setChatLog([...chatLogNew, { user: "gpt", message: `${data}`}]);
   }
- 
-
-
-/**
- * It takes in a query, a list of messages, and a count. It then calls the getLiveInfo function, which
- * returns a promise. If the count is 0, it calls the getInitialCompletion function, which returns a
- * promise. If the count is not 0, it calls the getContextCompletion function, which returns a promise
- * @param query - The query string that the user has typed so far.
- * @param messages - an array of messages that have been sent in the chat.
- * @param count - The number of messages that have been sent in the current chat session.
- * @returns A promise that resolves to an array of objects.
- */
-function fetchChatMessageCompletion(query, messages, count) {
-  return getLiveInfo(query)
-    .then(liveInfoResponse => {
-      console.log("Live info response: ", liveInfoResponse);
-
-      if (count === 0) {
-        return getInitialCompletion(liveInfoResponse, query);
-      }
-      return getContextCompletion(query, messages, liveInfoResponse);
-    })
-    .catch(error => console.error(error));
 }
 
 /**
@@ -158,33 +165,30 @@ function fetchChatMessageCompletion(query, messages, count) {
  * @param query - The query that you want to ask the bot.
  * @returns The function getLiveInfo is being returned.
  */
-  function getLiveInfo(query) {
-    if (dataSource === "KariFinancialAnalyst") {
-      const response = KariFinancialAnalyst(query);
-      return response;
-    } else if (dataSource === "KariSportsAnalyst") {
-      const response = KariSportsAnalyst(query);
-      return response;
-    } else if (dataSource === "KariRealEstateAnalyst") {
-      const response = KariRealEstateAnalyst(query);
-      return response;
-    } else if (dataSource === "KariMarketingAnalyst") {
-      const response = KariMarketingAnalyst(query);
-      return response;
-    } else {
-      console.error("Error: No data source was selected.");
-      return;
-    }
+async function getLiveInfo(query) {
+  if (!dataSource.length) {
+    alert("Please select a data source");
+    return;
   }
-  
-/**
- * It takes the value of the selected option in the dropdown menu and sets the state of the dataSource
- * variable to that value
- * @param e - the event object
- */
-async function handleDataSource (e) {
-  setDataSource(e.target.value);
-};
+  setSearch("Loading...");
+  let response;
+  if (dataSource === "KariFinancialAnalyst") {
+  response = await KariFinancialAnalyst(query);
+  return response;
+  } else if (dataSource === "KariSportsAnalyst") {
+  response = await KariSportsAnalyst(query);
+  } else if (dataSource === "KariRealEstateAnalyst") {
+  response = await KariRealEstateAnalyst(query);
+  } else if (dataSource === "KariMarketingAnalyst") {
+  response = await KariMarketingAnalyst(query);
+  } else {
+  console.error("Error: No data source was selected.");
+  return;
+  }
+  console.log("Response: ", response);
+  setSearch("Search");
+  return response;
+  }
 
 /* The above code is the main component of the application. It is the main container for the
 application. It is the main component that is rendered to the screen. */
@@ -236,6 +240,7 @@ application. It is the main component that is rendered to the screen. */
           placeholder="Ask a question or give a command"></input>
 
         <button className="submit-button" onClick={() => {handleSubmit();}}>Send</button>
+        <button className="submit-button" onClick={() => {setSearchLiveInfo(true); handleSubmit()}}>{search}</button>
       <select value={dataSource} onChange={handleDataSource}>
       <option value="">Select an option</option>
       <option value="KariFinancialAnalyst">Kari Financial Analyst Model</option>
@@ -269,4 +274,3 @@ const ChatMessage = ({ message }) => {
   )
 }
 export default App;
-

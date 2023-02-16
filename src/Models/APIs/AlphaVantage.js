@@ -17,34 +17,30 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-export function AlphaVantage(query){
-
-workflow(query).then(result => {
-    console.log(result);
-    return workflow;
-    });
+export async function AlphaVantage(query){
 
 async function workflow(query) {
     console.log("AlphaVantage called!");
-    console.log("Step 1: gettingRequestType from query:", query)
+    console.log("AV: Step 1: gettingRequestType from query:", query)
     const requestType = await getRequestType(query); // STEP 1
-    console.log("Step 2: processing requestType to int:", requestType);
+    console.log("AV: Step 2: processing requestType to int:", requestType);
     const firstDigit = requestType.replace(/\D/g, '')[0]; // STEP 2
     const extractedRequestType = parseInt(firstDigit); // STEP 2.5
-    console.log("Step 3: gettingSubRequestType from extractedRequestType & Query:", requestType, query);
+    console.log("AV: Step 3: gettingSubRequestType from extractedRequestType & Query:", requestType, query);
     const subRequestType = await getSubRequestType(extractedRequestType, query); // STEP 3
-    console.log("Step 4: extractingInfo from extractedRequestType & Query:", extractedRequestType, query);
+    console.log("AV: Step 4: extractingInfo from extractedRequestType & Query:", extractedRequestType, query);
     const extractedInfo = await extractInfo(extractedRequestType, query); // STEP 4
-    console.log("Step 5: formingApiParams from extractedInfo and subRequestType:", extractedInfo, subRequestType);
+    console.log("AV: Step 5: formingApiParams from extractedInfo and subRequestType:", extractedInfo, subRequestType);
     const apiParams = await formApiParams(subRequestType, extractedInfo) // STEP 5
-    console.log("Making API Call with params:", apiParams)
+    console.log("AV: Making API Call with params:", apiParams)
     const apiCallData = await callApi(apiParams); // STEP 6
-    console.log("Step 7: summarizingApiCallData with current date, requestType, subrequestType, apiCallData, and query:", requestType, subRequestType, apiCallData, query)
+    console.log("AV: Step 7: summarizingApiCallData with current date, requestType, subrequestType, apiCallData, and query:", requestType, subRequestType, apiCallData, query)
     const summarizedApiCallData = await summarizeApiCallData(requestType, subRequestType, apiCallData, query); // STEP 7
-    console.log("Final Step: Return Summary", summarizedApiCallData);
+    console.log("AV: Final Step: Return Summary", summarizedApiCallData);
     return summarizedApiCallData;
 }   
-
+    const response = await workflow(query);
+    return response;
     // STEP 1
    async function getRequestType(query) {
         const response = await openai.createCompletion({
@@ -52,13 +48,11 @@ async function workflow(query) {
             prompt: `
             View the query, determine the request type, and output the whole line associated with the query, starting with the number.
             (1) Core Stock APIS - Intraday, Daily, Weekly, Monthly, & Current Price.
-            (2) Alpha Intelligence - News & Sentiments, Winning Portfolios.
-            (3) Fundamental Data - Company Overview, Income Statement, Balance Sheet, Cash Flow, Earnings, Earnings Calendar, IPO Calendar
-            (4) Forex - Exchange Rates, Intraday, Daily, Weekly, Monthly
-            (5) Cryptocurrency - Intraday, Daily, Weekly, Monthly
-            (6) Commodities - Crude Oil(Brent), Natural Gas, Copper, Aluminum, Wheat, Corn, Cotton, Sugar, Coffee, Global Commodities Index
-            (7) Economic Indicators - Real GDP, Real GDP Per Capita, Treasury Yield, Federal Funds Interest Rate, CPI, Inflation, Retail Sales, Durable Goods Orders, Unemployment Rate, Nonfarm Payroll
-            (8) Technical Indicators - SMA, EMA, WMA, DEMA, TEMA, TRIMA, KAMA, MAMA, T3, MACD, MACDEXT, STOCH, STOCHF, RSI, STOCHRSI, WILLR, ADX, ADXR, APO, PPO, MOM, BOP, CCI, CMO, ROC, ROCR, AROON, AROONOSC, MFI, TRIX, ULTOSC, DX, MINUS_DI, PLUS_DI, MINUS_DM, PLUS_DM, BBANDS, MIDPOINT, MIDPRICE, SAR, TRANGE, ATR, NATR, AD, ADOSC, OBV, HT_TRENDLINE, HT_SINE, HT_TRENDMODE, HT_DCPERIOD, HT_DCPHASE, HT_PHASOR
+            (2) Forex - Exchange Rates, Intraday, Daily, Weekly, Monthly
+            (3) Cryptocurrency - Intraday, Daily, Weekly, Monthly
+            (4) Commodities - Crude Oil(Brent), Natural Gas, Copper, Aluminum, Wheat, Corn, Cotton, Sugar, Coffee, Global Commodities Index
+            (5) Economic Indicators - Real GDP, Real GDP Per Capita, Treasury Yield, Federal Funds Interest Rate, CPI, Inflation, Retail Sales, Durable Goods Orders, Unemployment Rate, Nonfarm Payroll
+            (6) Technical Indicators - SMA, EMA, WMA, DEMA, TEMA, TRIMA, KAMA, MAMA, T3, MACD, MACDEXT, STOCH, STOCHF, RSI, STOCHRSI, WILLR, ADX, ADXR, APO, PPO, MOM, BOP, CCI, CMO, ROC, ROCR, AROON, AROONOSC, MFI, TRIX, ULTOSC, DX, MINUS_DI, PLUS_DI, MINUS_DM, PLUS_DM, BBANDS, MIDPOINT, MIDPRICE, SAR, TRANGE, ATR, NATR, AD, ADOSC, OBV, HT_TRENDLINE, HT_SINE, HT_TRENDMODE, HT_DCPERIOD, HT_DCPHASE, HT_PHASOR
 
             Here is the query: ${query}
             `,
@@ -95,47 +89,7 @@ async function workflow(query) {
                 console.error("Error in createCompletion function:", error);
             }     
         } else if (extractedRequestType === 2) {
-        console.log("Case Two! Running now...");
-        let requestTwo;
-        requestTwo = await openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: `
-            Instructions: View the query, and determine the subRequestType, which is the option that most closely matches the query.
-            Return: The item in the parenthesis that corresponds to the subRequestType.
-            1. News & Sentiments (NEWS_SENTIMENT)
-            2. Winning Portfolios (TOURNAMENT_PORTFOLIO)
-
-            Query: ${query}
-            `,
-            max_tokens: 128,
-            temperature: 0.5,
-
-        })
-        console.log(requestTwo);
-        return requestTwo.data.choices[0].text;
-        } else if (extractedRequestType === 3) {
-        console.log("Request Type 3! Running now...");
-        let requestThree;
-        requestThree = await openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: `
-            Instructions: View the query, and determine the subRequestType, which is the option that most closely matches the query.
-            Return: The item in the parenthesis that corresponds to the subRequestType.
-            1. Company Overview (OVERVIEW)
-            2. Income Statement (INCOME_STATEMENT)
-            3. Balance Sheet (BALANCE_SHEET)
-            4. Cash Flow (CASH_FLOW)
-            5. Earnings (EARNINGS)
-            6. IPO Calendar (IPO_CALENDAR)
-
-            Query: ${query}
-            `,
-            max_tokens: 128,
-            temperature: 0.5,
-        })
-        return requestThree.data.choices[0].text;  
-        } else if (extractedRequestType === 4) {
-        console.log("Case Four! Running now...");
+        console.log("Case Three! Running now...");
         let requestFour;
         requestFour = await openai.createCompletion({
             model: "text-davinci-003",
@@ -154,8 +108,8 @@ async function workflow(query) {
             temperature: 0.5,
         })
         return requestFour.data.choices[0].text;
-        } else if (extractedRequestType === 5) {
-        console.log("Case Five! Running now...");
+        } else if (extractedRequestType === 3) {
+        console.log("Case Three! Running now...");
         let requestFive;
         requestFive =  await openai.createCompletion({
             model: "text-davinci-003",
@@ -174,8 +128,8 @@ async function workflow(query) {
             temperature: 0.5,
         })
         return requestFive.data.choices[0].text;
-        } else if (extractedRequestType === 6) {
-        console.log("Case Six! Running now...");
+        } else if (extractedRequestType === 4) {
+        console.log("Case Four! Running now...");
         let requestSix;
         requestSix = await openai.createCompletion({
             model: "text-davinci-003",
@@ -200,8 +154,8 @@ async function workflow(query) {
             temperature: 0.5,
         })
         return requestSix.data.choices[0].text;     
-        } else if (extractedRequestType === 7) {
-        console.log("Case Seven! Running now...");
+        } else if (extractedRequestType === 5) {
+        console.log("Case Five! Running now...");
         let requestSeven;
         requestSeven = await openai.createCompletion({
             model: "text-davinci-003",
@@ -225,8 +179,8 @@ async function workflow(query) {
             temperature: 0.5,
         })
         return requestSeven.data.choices[0].text;
-        } else if (extractedRequestType === 8) {
-        console.log("Case Eight! Running now...");
+        } else if (extractedRequestType === 6) {
+        console.log("Case Six! Running now...");
         let requestEight;
         requestEight = await openai.createCompletion({
             model: "text-davinci-003",
@@ -296,6 +250,7 @@ async function workflow(query) {
             console.log("Invalid Request Type!")
         }
     }
+    
     // STEP 4
     async function extractInfo(extractedRequestType, query) {
         if (extractedRequestType === 1) { // extract stockName, interval 
@@ -319,45 +274,7 @@ async function workflow(query) {
             } catch (error) {
                 console.error(error);
             }
-        } else if (extractedRequestType === 2) { // extract stockName, unless winning portfolios, then no extraction.
-            try {
-            console.log("Extracting stockName, unless user chose winning portfolios!");
-            let response;
-            response = await openai.createCompletion({
-                model: "text-davinci-003",
-                prompt: `
-                Instructions: View the query, and extract the stock ticker symbol from it. If the request is mentioning winning portfolios, return the word "winning-portfolios"
-                Defaults if N/a: symbol: AAPL
-                Return: The output prefaced by the label and a colon. (symbol: AAPL)
-                Query: ${query}
-                `,
-                max_tokens: 128,
-                temperature: 0.5
-            })
-            return response.data.choices[0].text;
-        } catch (error) {
-            console.error(error);
-        }
-        } else if (extractedRequestType === 3) { // extract stockName
-            try {
-            console.log("Extracting stockName!");
-            let response;
-            response = await openai.createCompletion({
-                model: "text-davinci-003",
-                prompt: `
-                Instructions: View the query, and extract the stock ticker symbol from it. 
-                Defaults if N/a: symbol: AAPL
-                Return: The output prefaced by the label and a colon. (symbol: AAPL)
-                Query: ${query}
-                `,
-                max_tokens: 128,
-                temperature: 0.5
-            })
-            return response.data.choices[0].text;
-        } catch (error) {
-            console.error(error);
-        }
-        } else if (extractedRequestType === 4) { // extract fromCurrency, extract toCurrency, if only one currency, make it a USD pair. 
+        } else if (extractedRequestType === 2) { // extract fromCurrency, extract toCurrency, if only one currency, make it a USD pair. 
             try {
                 console.log("Extracting fromCurrency, toCurrency!");
             let response;
@@ -375,7 +292,7 @@ async function workflow(query) {
             } catch (error) {
                 console.error(error);
             }
-        } else if (extractedRequestType === 5) { // extract fromCurrency, extract toCurrency, if only one currency, make it a USD pair. 
+        } else if (extractedRequestType === 3) { // extract fromCurrency, extract toCurrency, if only one currency, make it a USD pair. 
             try {
                 console.log("Extracting fromCurrency, toCurrency!");
             let response;
@@ -394,7 +311,7 @@ async function workflow(query) {
         } catch (error) {
             console.error(error);
         }
-        } else if (extractedRequestType === 6) {  // extract interval if present
+        } else if (extractedRequestType === 4) {  // extract interval if present
             try { 
                 console.log("Extracting interval if present!");
             let response;
@@ -412,7 +329,7 @@ async function workflow(query) {
         } catch (error) {
             console.error(error);
         }
-        } else if (extractedRequestType === 7) { // extract interval if present
+        } else if (extractedRequestType === 5) { // extract interval if present
             try {
                 console.log("Extracting interval if present!");
             let response;
@@ -430,7 +347,7 @@ async function workflow(query) {
         } catch (error) {
             console.error(error);
         }
-        } else if (extractedRequestType === 8) { // extract stockName, extract interval, time_period, series_type
+        } else if (extractedRequestType === 6) { // extract stockName, extract interval, time_period, series_type
             try {
                 console.log("Extracting stockName, interval, time_period, and series_type!");
             let response;

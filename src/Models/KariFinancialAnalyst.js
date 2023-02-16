@@ -6,10 +6,6 @@ import { GFinance } from './APIs/GFinance';
 import { Crowdsense } from './APIs/Crowdsense';
 import { SECFilings } from './APIs/SECFilings';
 
-
-
-// LAST LEFT OFF ON: Figuring out how to get the workflow to run in sequence without fucking up.
-
 const orgId = process.env.ORG_ID;
 const apiKey = "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";
 
@@ -19,17 +15,10 @@ const configuration = new Configuration({
   });
   const openai = new OpenAIApi(configuration);
 
-export function KariFinancialAnalyst(query) {
-
-    workflow(query).then(result => {
-        console.log(result);
-        return workflow;
-        });
-    
-
-    // maps possible requestTypes to an array of associated functions for callback. functions are below.
+export async function KariFinancialAnalyst(query) {
+/* This is a dictionary of functions that are called based on the output of the OpenAI API. */
     const requestFunctions = {
-        1: AlphaVantage, //
+        1: AlphaVantage, // 
         2: WallStreetBets, //  
         3: StockSentimentAPI, //
         4: GFinance, //  
@@ -37,15 +26,24 @@ export function KariFinancialAnalyst(query) {
         6: SECFilings, 
     }
 
-    // overall workflow. Decides which sub-workflow to execute, executes it, then returns the response.
+/**
+ * > The function `workflow` takes a query, and returns a response
+ * @param query - the query string
+ * @returns The response from the workflow function.
+ */
    async function workflow(query) {
-        console.log("Step 1: gettingRecommendedDataSources")
-        const requestType = await getRecommendedDataSources(query); // NOTE: this is a promise.
-        console.log("Step 2 getting response from requested function:",requestType);
+        console.log("KariFA: Step 1: gettingRecommendedDataSources")
+        const requestType = await getRecommendedDataSources(query); 
+        console.log("KariFA: Step 2 getting response from requested function:",requestType);
         const requestOutput = await requestFunctions[requestType](query);
         return requestOutput;
     }
+
+    const response = await workflow(query);
+    return response;
     
+    /* This function is using the OpenAI API to determine which data source is most relevant to the
+    user's request. */
     async function getRecommendedDataSources(query) {
     const response = await openai.createCompletion({
         model: "text-davinci-003",
@@ -55,7 +53,7 @@ export function KariFinancialAnalyst(query) {
 
         Potential Options:
            | Name | Description | How to Query |
-        1. | AlphaVantage | Stock Price Data, Alpha Intelligence, Company Fundamentals, Company Financial Statements, Forex, Commodities, Economic Indicators, Technical Indicators | Specific Questions |
+        1. | AlphaVantage | Stock Price Data, Alpha Intelligence, Forex, Commodities, Economic Indicators, Technical Indicators | Specific Questions |
         2. | WallStreetBets | Stocks & Sentiment by Reddit posts on popular finance subreddits | Vague Requests, Trending Info |
         3. | StockSentimentAPI | Sentiment Analyis & News Articles by ticker | Specific or Vague questions |
         4. | GFinance | General market screening, get info by category (winners, losers, active, etc.) | Vague Requests, Trending Info |
