@@ -8,44 +8,28 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-export async function WallStreetBets(query){
+export async function WallStreetBets(query) {
 
-async function workflow(query) {
-    console.log("WSB called!");
-    console.log("Step 1: extractingInfo from query:",query);
-    const extractedInfo = await extractInfo(query); // STEP 4
-    console.log("Step 2: formingApiParams from extractedInfo and subRequestType:", extractedInfo);
-    const apiParams = await formApiParams(extractedInfo) // STEP 5
-    console.log("Step 3: Making API Call with params:", apiParams)
-    const apiCallData = await callApi(apiParams); // STEP 6
-    console.log("Step 4: summarizingApiCallData with current date, requestType, subrequestType, apiCallData, and query:",  apiCallData, query)
-    const summarizedApiCallData = await summarizeApiCallData( apiCallData, query); // STEP 7
-    console.log("Final Step: Return Summary", summarizedApiCallData);
-    return summarizedApiCallData;
-}   
+    async function workflow(query) {
+        console.log("WSB called!");
+        console.log("WSB-1: formingApiParams");
+        const apiParams = await formApiParams(query);
+        console.log("WSB-2: Making API Call with params:", apiParams)
+        const apiCallData = await callApi(apiParams);
+        console.log("WSB-3: Summarizing...")
+        const summarizedApiCallData = await summarizeApiCallData(apiCallData, query); // STEP 7
+        console.log("Final Step: Return Summary", summarizedApiCallData);
+        return summarizedApiCallData;
+    }
     const response = await workflow(query);
     return response;
 
-    // STEP 4
-    async function extractInfo(query) {
-        console.log("");
-        let response;
-        response = await openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: `
-            Query: ${query}
-            `,
-            max_tokens: 128,
-            temperature: 0.5
-        })
-        return response.data.choices[0].text;
-    }
 
     async function formApiParams(extractedInfo) {
         const response = await openai.createCompletion({
             model: "text-davinci-003",
             prompt: `
-            Instructions: Take in the date from the extracted info, and format it like so:
+            Instructions: Take in the query, and extract the time sentiment suggested, and format it like so:
             
             date=today            
             
@@ -58,8 +42,8 @@ async function workflow(query) {
             date=last_month
 
             example:
-            extractedInfo: timeRange = today
-            output: date=today
+            query: What are the trending tocks for the last week?
+            output: date=last_week
 
             extractedInfo: ${extractedInfo}
             `,
@@ -67,19 +51,18 @@ async function workflow(query) {
             temperature: 0.5,
         })
         const formattedText = response.data.choices[0].text.trim();
-        const functionIndex = formattedText.indexOf('function=');
+        const functionIndex = formattedText.indexOf('date=');
         return formattedText.slice(functionIndex);
-        }
+    }
 
-    // STEP 6
     async function callApi(newApiParams) {
         const url = `https://wallstreetbets.p.rapidapi.com/?${newApiParams}`;
         const options = {
-          method: 'GET',
-          headers: {
-            'X-RapidAPI-Key': '72afef0eebmsh11f76b0091d62b7p17626bjsnea279a0c36ba',
-            'X-RapidAPI-Host': 'wallstreetbets.p.rapidapi.com'
-          }
+            method: 'GET',
+            headers: {
+                'X-RapidAPI-Key': '72afef0eebmsh11f76b0091d62b7p17626bjsnea279a0c36ba',
+                'X-RapidAPI-Host': 'wallstreetbets.p.rapidapi.com'
+            }
         };
         const response = await fetch(url, options);
         const data = await response.text();
@@ -87,25 +70,22 @@ async function workflow(query) {
         const trimmedData = data.replace(/\s/g, '').substring(0, 3000);
         console.log('Trimmed data:', trimmedData);
         return trimmedData;
-      }
-      
-    // STEP 7
-    async function summarizeApiCallData(requestType, subRequestType, apiCallData, query) {
+    }
+
+    async function summarizeApiCallData(apiCallData, query) {
         const response = await openai.createCompletion({
             model: "text-davinci-003",
             prompt: `
             Instructions: 
 
-            DataSource: ${requestType},
-            Request Type: ${subRequestType}
             Data to be summarized: ${apiCallData}
             Question to be asked associated with data: ${query}
 
             `,
-            max_tokens: 450,
+            max_tokens: 500,
             temperature: 0.5
-            
+
         })
         return response.data.choices[0].text;
     }
-   }
+}
