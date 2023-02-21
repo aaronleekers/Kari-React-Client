@@ -37,7 +37,7 @@ export async function KariFinancialAnalyst(query) {
     console.log("KariFA-2 getting response from requested function:", requestType);
     const requestOutput = await requestFunctions[requestType](query);
     return requestOutput;
-  }
+  }//
 
   const response = await workflow(query);
   return response;
