@@ -34,3 +34,10 @@ What are the top 5 stocks on WSB? // Works
 What are the top 5 stocks on WSB today? // Works
 What are the top 5 stocks on WSB this week? // Works
 What are the top 5 stocks on WSB this month? // Works
+## GFinance
+What are the most active stocks today?
+What are the gainer stocks today?
+What are the loser stocks today?
+Who are the current climate leaders?
+Get me an overview of the crypto market
+Get me an overview of the currency market

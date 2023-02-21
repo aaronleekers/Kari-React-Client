@@ -7,7 +7,7 @@ import { Crowdsense } from './APIs/Crowdsense';
 import { FinancialStatements } from './APIs/FinancialStatements';
 
 const orgId = process.env.ORG_ID;
-const apiKey = "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";
+const apiKey = "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";
 
 const configuration = new Configuration({
   orgId: orgId,
@@ -18,10 +18,10 @@ const openai = new OpenAIApi(configuration);
 export async function KariFinancialAnalyst(query) {
   /* This is a dictionary of functions that are called based on the output of the OpenAI API. */
   const requestFunctions = {
-    1: AlphaVantage, // WORKS
-    2: WallStreetBets, //  Works 
+    1: AlphaVantage,
+    2: WallStreetBets,
     3: StockSentimentAPI, // WORK ON 
-    4: GFinance, //  WORK ON
+    4: GFinance,
     5: Crowdsense, // WORK ON
     6: FinancialStatements, // WORK ON
   }
@@ -56,7 +56,7 @@ export async function KariFinancialAnalyst(query) {
         1. | AlphaVantage | Stock Price Data, Alpha Intelligence, Forex, Commodities, Economic Indicators, Technical Indicators | Specific Questions |
         2. | WallStreetBets | Stocks & Sentiment by Reddit posts on popular finance subreddits | Vague Requests, Trending Info |
         3. | StockSentimentAPI | Sentiment Analyis & News Articles by ticker | Specific or Vague questions |
-        4. | GFinance | General market screening, get info by category (winners, losers, active, etc.) | Vague Requests, Trending Info |
+        4. | GFinance | General market screening, get info by category (winners, losers, active, etc.) | Vague Requests, Trending Info, For overviews & Climate questions |
         5. | Crowdsense | Cryptocurrency Sentiment Analsyis by scraping social media & predicting future spikes | Specific or Vague questions |
         6. | FinancialStatements | SEC filings for a public company by ticker, including Manager Ownership, Insider Transactions, and Manager Holdings | Specific or Vague questions |
 

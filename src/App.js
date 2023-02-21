@@ -21,7 +21,7 @@ inject();
 
 // envs
 const orgId = process.env.ORG_ID;
-const apiKey = "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";
+const apiKey = "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";
 
 function App() {
 
@@ -135,7 +135,6 @@ function App() {
       if (searchLiveInfo === (true)) {
         console.log("Getting live Info Now");
         liveInfoResponse = await getLiveInfo(query);
-        console.log(liveInfoResponse);
       } else {
         console.log("User did not request live info");
       }
@@ -146,7 +145,7 @@ function App() {
       let data;
       if (count === 0) {
         console.log("Getting initial completion");
-        data = await getInitialCompletion(messages);
+        data = await getInitialCompletion(messages, liveInfoResponse);
         setCount(count + 1);
       } else {
         console.log("Getting context completion");
