@@ -21,7 +21,7 @@ export async function KariFinancialAnalyst(query) {
     1: AlphaVantage, // WORKS
     2: WallStreetBets, //  Works 
     3: StockSentimentAPI, // WORK ON 
-    4: GFinance, //  WORK ON
+    4: GFinance, //  WORK ON 
     5: Crowdsense, // WORK ON
     6: FinancialStatements, // WORK ON
   }

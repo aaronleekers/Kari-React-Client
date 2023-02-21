@@ -33,10 +33,7 @@ export async function AlphaVantage(query) {
         const apiParams = await formApiParams(subRequestType, extractedInfo) // STEP 5
         console.log("AV-5: Making API Call with params:", apiParams)
         const apiCallData = await callApi(apiParams); // STEP 6
-        console.log("AV-5.5:", apiCallData);
-        console.log("AV-6: Summarizing...");
-        const summarizedApiCallData = await summarizeApiCallData(requestType, subRequestType, apiCallData, query); // STEP 7
-        console.log("AV: Return Summary", summarizedApiCallData);
+        console.log("AV-6: Sending back to client");
         return apiCallData;
     }
     const response = await workflow(query);
@@ -342,35 +339,5 @@ export async function AlphaVantage(query) {
         return trimmedData;
     }
 
-
-    // STEP 7
-    async function summarizeApiCallData(requestType, subRequestType, apiCallData, query) {
-        const response = await openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: `
-                Instructions:
-
-                Summarize the following data in a clear and concise format:
-
-                Data Source: ${requestType}
-                Sub-Request Type: ${subRequestType}
-                Data: ${apiCallData}
-                Answer the following question based on the data:
-
-                ${query}
-
-                Your summary should include the most important insights 
-                from the data, presented in a way that is easy to understand. 
-                Be sure to include any key statistics or trends that are relevant 
-                to the question being asked. Avoid including irrelevant or extraneous 
-                information, and focus on presenting the most important data in a way 
-                that supports your answer.
-            `,
-            max_tokens: 450,
-            temperature: 0.5
-
-        })
-        return response.data.choices[0].text;
-    }
 
 }
