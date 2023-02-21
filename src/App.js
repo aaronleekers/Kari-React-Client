@@ -52,16 +52,20 @@ function App() {
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: `
-      Context: You are an artificial advisor named Kari. Your goal is to talk with users and provide relevant information by pulling in data from a variety of sources. If the user asks for live data, it will be passed into this prompt for you to process & respond to. If there is no live data, you will need to respond accordingly.
+      Instructions: view the first nessage and respond to it accordingly.
+      Context: You are an artificial financial advisor named Kari. 
+      Conversational Style: You are a friendly, helpful, and knowledgeable financial advisor.
       Formatting: Money in USD, "$xxx,xxx.xx". (print out full number, not abbreviated)
+      Abilities: The user can choose to pull in live financial data summaries for you to process. If user asks for live data, you will need to process it. If there is none, you will need to respond accordingly.
 
       Current feature list: Live Market Information (Stocks, Crypto, ETFs, Mutual Funds, Bonds, etc.), Smart Financial Analysis on Live Market Information, Insight generation - what to buy, what to sell, what to hold, etc.
+      Current data sources: eodHistoricalData.com
       Current Data types: Current Asset prices, Historical Asset prices, macroeconomic data, crypto fundamentals, stock fundamentals, etc.
+      Current limitation list: Max of 3 stocks requested at a time. Max of one financial statement requested at a time.
       future plans for platform: Charting, Personalized Advice, Alternative Data Sources, Intelligent insight generation, and more. 
 
-      user message: ${query}
-      Data Passed in: ${liveInfoResponse}
-
+      latestMessage: ${query}
+      Data Summary Passed in: ${liveInfoResponse}
       `,
       max_tokens: 2048,
       temperature: .6,
@@ -87,7 +91,7 @@ function App() {
 
       latestMessage: ${query}
       chatLog: ${messages}
-      Data to be passed in: ${liveInfoResponse}
+      Data Summary Passed in: ${liveInfoResponse}
       `,
       max_tokens: 512,
       temperature: .5,
@@ -114,7 +118,10 @@ function App() {
   async function handleDataSource(e) {
     setDataSource(e.target.value);
   };
-
+  // last left off on making sure that the 
+  // liveInfoResponse is being passed as the 
+  // apiCallData and then being used in the prompts.
+  // OKAY I THINK I DID THAT
   /**
    * `handleSubmit` is an async function that takes an event as an argument. It prevents the default
    * action of the event, and then checks if the query is empty, or if the query is less than 4
@@ -130,18 +137,18 @@ function App() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (query.trim() && query.length > 4) {
-      let liveInfoResponse;
       let chatLogNew = [...chatLog, { user: "me", message: `${query}` }];
+      setQuery("");
+      setChatLog(chatLogNew);
+      setShowOverlay(false);
+      const messages = chatLogNew.map((message) => message.message).join("");
+      let liveInfoResponse;
       if (searchLiveInfo === (true)) {
         console.log("Getting live Info Now");
         liveInfoResponse = await getLiveInfo(query);
       } else {
         console.log("User did not request live info");
       }
-      setQuery("");
-      setChatLog(chatLogNew);
-      setShowOverlay(false);
-      const messages = chatLogNew.map((message) => message.message).join("");
       let data;
       if (count === 0) {
         console.log("Getting initial completion");
@@ -149,7 +156,7 @@ function App() {
         setCount(count + 1);
       } else {
         console.log("Getting context completion");
-        data = await getContextCompletion(query, messages);
+        data = await getContextCompletion(query, messages, liveInfoResponse);
       }
       setSearchLiveInfo(false);
       setChatLog([...chatLogNew, { user: "gpt", message: `${data}` }]);
