@@ -12,7 +12,7 @@ const { Configuration, OpenAIApi } = require('openai');
 
 
 const orgId = "org-rnY9Z2LuVmBnRlAsfLipqzcf";
-const apiKey = "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";
+const apiKey = "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";
 
 const configuration = new Configuration({
     orgId: orgId,
